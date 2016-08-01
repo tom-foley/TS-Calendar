@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es5",
+        "module": "amd",
+        "sourceMap": false,
+        "outDir": "./lib/",
+        "removeComments": true
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}

@@ -1,0 +1,32 @@
+//  ---------- Size Names
+$mobile-sm:                     mobile-sm !default;
+$mobile-md:                     mobile-md !default;
+$mobile-lg:                     mobile-lg !default;
+$tablet:                        tablet !default;
+$desktop-sm:                    desktop-sm !default;
+$desktop-lg:                    desktop-lg !default;
+
+//  ---------- Sizes
+$sizes:                         ($mobile-sm, $mobile-md, $mobile-lg, $tablet, $desktop-sm, $desktop-lg);
+
+//  ---------- Breakpoints Widths
+$mobile-sm-breakpoint:          320px;
+$mobile-md-breakpoint:          375px;
+$mobile-lg-breakpoint:          425px;
+$tablet-breakpoint:             768px;
+$desktop-sm-breakpoint:         992px;
+$desktop-lg-breakpoint:         1200px;
+
+//  ---------- Breakpoints
+$breakpoints:                   ($mobile-sm-breakpoint, $mobile-md-breakpoint, $mobile-lg-breakpoint, $tablet-breakpoint, $desktop-sm-breakpoint, $desktop-lg-breakpoint);
+
+//  ---------- Grid Widths
+$container-mobile-sm-width:     97.5%;
+$container-mobile-md-width:     95%;
+$container-mobile-lg-width:     92.5%;
+$container-tablet-width:        90%;
+$container-desktop-sm-width:    85%;
+$container-desktop-lg-width:    75%;
+
+//  ---------- Grid Widths
+$container-widths:              ($container-mobile-sm-width, $container-mobile-md-width, $container-mobile-lg-width, $container-tablet-width, $container-desktop-sm-width, $container-desktop-lg-width);

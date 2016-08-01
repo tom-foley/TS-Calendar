@@ -1,0 +1,23 @@
+$breakpoints-len: length($breakpoints);
+@for $i from 1 through $breakpoints-len {
+    @media all and (min-width: nth($breakpoints, $i)) {
+        .container {
+            width: nth($container-widths, $i);
+        }
+
+        @for $j from 1 through 12 {
+            $size: nth($sizes, $i);
+            .#{$size}-#{$j} {
+                width: percentage($j / 12);
+            }
+        }
+    }
+}
+
+.group {
+    [class^='mobile-'],
+    [class^='table-'],
+    [class^='desktop-'] {
+        float: left;
+    }
+}
