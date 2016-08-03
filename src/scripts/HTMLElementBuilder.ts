@@ -1,4 +1,4 @@
-function isDefined(obj) {
+export function isDefined(obj) {
     return typeof (obj) !== 'undefined' && obj !== null;
 }
 
@@ -33,8 +33,6 @@ export class HTMLEventAttr {
 
 
 export class HTMLElementBuilder {
-    constructor() { }
-
     public static CreateEl(props: Object): HTMLElement {
         let currAttr: string;
         let el: HTMLElement = null;

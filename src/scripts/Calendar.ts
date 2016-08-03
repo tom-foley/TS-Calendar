@@ -1,19 +1,53 @@
-import { HTMLElementBuilder, HTMLEventAttr, HTMLStyleAttr } from './HTMLElementBuilder';
+import { HTMLElementBuilder, HTMLEventAttr, HTMLStyleAttr, isDefined } from './HTMLElementBuilder';
 
 const element = HTMLElementBuilder.CreateEl;
 const style = HTMLStyleAttr;
-const event = HTMLEventAttr;
+//const event = HTMLEventAttr;
 
 export class Calendar {
-    constructor() { 
+    startDate: Date;
+    container: HTMLElement;
+
+    constructor(container: HTMLElement, options?: Object) {
+        this.container = container;
+
+        if (isDefined(options)) {
+            let attr: string;
+            attr = 'startDate';
+            if (isDefined(options[attr])) {
+                const date = options[attr];
+                if (typeof (date) === 'object') {
+                    this.startDate = date;
+                } else if (typeof (date) === 'string') {
+                    this.startDate = new Date(date);
+                }
+            } else {
+                this.startDate = new Date();
+            }
+        }
+
+        this.render();
+    }
+
+
+    private render() {
         let el: HTMLElement = element({
-            type: 'div',
+            type: 'table',
             styles: [
-                new style('width', '20px')
+                new style('width', '100%')
             ],
-            events: [
-                new event('click', alert(1))
+            children: [
+                element({
+                    type: 'tr',
+                    children: [
+                        element({
+                            type: 'td'
+                        })
+                    ]
+                }),
             ]
         });
+
+        this.container.appendChild(el);
     }
 }
