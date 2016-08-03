@@ -1,9 +1,9 @@
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
-    entry: './app.ts',
+    entry: './index.ts',
     output: {
-        filename: './lib/bundle.js'
+        filename: './bundle.js'
     },
     resolve: {
         // Add `.ts` and `.tsx` as a resolvable extension.
@@ -23,7 +23,7 @@ module.exports = {
         ],
     },
     plugins: [
-        new ExtractTextPlugin('./lib/bundle.css', {
+        new ExtractTextPlugin('./bundle.css', {
             allChunks: true
         })
     ],    

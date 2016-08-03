@@ -33,13 +33,17 @@ export class HTMLEventAttr {
 
 
 export class HTMLElementBuilder {
-    public static CreateEl(props: Object): HTMLElement {
+    constructor() { }
+
+
+    public createEl(props: Object): HTMLElement {
         let currAttr: string;
         let el: HTMLElement = null;
 
         currAttr = 'type';
-        if (isDefined(props[currAttr]) && (<string>props[currAttr]).length > 0) {
-            el = document.createElement(<string>props[currAttr]);
+
+        if (isDefined(props[currAttr]) && props[currAttr].length > 0) {
+            el = document.createElement(props[currAttr]);
         } else {
             return el;
         }
@@ -71,7 +75,7 @@ export class HTMLElementBuilder {
             let child: HTMLElement;
             let children = (<Array<Object>>props[currAttr]);
             for (let i: number = 0; i < children.length; ++i) {
-                child = HTMLElementBuilder.CreateEl(children[i]);
+                child = this.createEl(children[i]);
                 if (isDefined(child)) {
                     el.appendChild(child);
                 }

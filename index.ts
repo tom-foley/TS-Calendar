@@ -1,4 +1,5 @@
 declare var require: any;
+
 require('./src/styles/styles');
 
 import { Calendar } from './src/scripts/Calendar';
