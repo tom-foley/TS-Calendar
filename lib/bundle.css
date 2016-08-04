@@ -182,3 +182,11 @@
   height: 100%;
   margin: 0;
   padding: 0; }
+
+#calendar .ts-calendar {
+  width: 100%;
+  text-align: center; }
+  #calendar .ts-calendar th, #calendar .ts-calendar td {
+    padding: 5px; }
+  #calendar .ts-calendar .ts-calendar-day-active {
+    background-color: green; }

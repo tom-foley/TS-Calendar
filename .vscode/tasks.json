@@ -6,5 +6,5 @@
     "isShellCommand": true,
     "args": ["node_modules/gulp/bin/gulp.js"],
     // "args": ["node_modules/webpack/bin/webpack.js", "./app.ts", "./lib/bundle.js"],
-    "showOutput": "silent"
+    "showOutput": "never"
 }
