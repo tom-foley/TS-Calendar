@@ -34,8 +34,9 @@ export class Calendar {
     private _activeDayCssClass: string = 'ts-cal-day-active';
 
 
-    //  Custom Events  
+    //  Custom Events
     public onSelectedDateChanged: any;
+    private onSelectedDateChangedName: string = 'selectedDateChanged';
 
     private months: Array<string> = [
         'January', 'February', 'March', 'April',
@@ -49,7 +50,7 @@ export class Calendar {
         this.setFields(options);
         this.render();
         this.isHidden = false;
-        this.toggleCalendar();
+        this.toggleCalendar(true);
     }
 
 
@@ -145,13 +146,23 @@ export class Calendar {
         }
 
         if (this.onSelectedDateChanged) {
-            var event = new Event('selectedDateChanged');
-            self.addEventListener('selectedDateChanged',
+            let ev: Event;
+            const eventStr: string = 'Event';
+
+            if (typeof (window[eventStr]) === 'function') {
+                ev = new Event(this.onSelectedDateChangedName);
+            } else {
+                ev = document.createEvent(eventStr);
+                ev.initEvent(this.onSelectedDateChangedName, true, true);
+            }
+
+            self.addEventListener(this.onSelectedDateChangedName,
                 this.onSelectedDateChanged({
                     oldDate: this.oldSelectedDate, newDate: this.selectedDate
                 }), false
             );
-            self.dispatchEvent(event);
+
+            self.dispatchEvent(ev);
         }
     }
 
