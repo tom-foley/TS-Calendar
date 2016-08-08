@@ -4,70 +4,94 @@ function isDefined(obj) {
 
 export class Calendar {
     //  Elements
-    container: HTMLElement;
-    calendar: HTMLTableElement;
-    selectedCell: HTMLTableCellElement;
+    private input: HTMLInputElement;
+    private parent: HTMLElement;
+    private container: HTMLDivElement;
+    private calendar: HTMLTableElement;
+    private calendarWrapper: HTMLDivElement;
+    private inputBtn: HTMLSpanElement;
+    private inputWrapper: HTMLDivElement;
+    private selectedCell: HTMLTableCellElement;
 
     //  Fields
-    selectedDay: number;
-    selectedMonth: number;
-    selectedYear: number;
-    selectedDate: Date;
-    oldSelectedDate: Date;
-    calendarCssClass: string = 'ts-calendar';
-    calendayDayCssClass: string = 'ts-calendar-day';
-    calendarDayActiveCssClass: string = 'ts-calendar-day-active';
+    private selectedDate: Date = new Date();
+    private oldSelectedDate: Date;
+
+    private selectedDay: number;
+    private selectedMonth: number;
+    private selectedYear: number;
+
+    public animate: boolean = false;
+    private isHidden: boolean;
+
+    public cssClass: string = '';
+    public headerCssClass: string = '';
+    public dayCssClass: string = '';
+    public activeDayCssClass: string = '';
+    private _cssClass: string = 'ts-cal';
+    private _headerCssClass: string = 'ts-cal-header';
+    private _dayCssClass: string = 'ts-cal-day';
+    private _activeDayCssClass: string = 'ts-cal-day-active';
+
 
     //  Custom Events  
-    onSelectedDateChanged: any;
+    public onSelectedDateChanged: any;
 
-    months: Array<string> = [
+    private months: Array<string> = [
         'January', 'February', 'March', 'April',
         'May', 'June', 'July', 'August',
         'September', 'October', 'November', 'December',
     ];
 
 
-    constructor(container: HTMLElement, options?: Object) {
-        this.container = container;
+    constructor(input: HTMLInputElement, options?: Object) {
+        this.setElements(input);
         this.setFields(options);
         this.render();
+        this.isHidden = false;
+        this.toggleCalendar();
+    }
+
+
+    private setElements(input: HTMLInputElement) {
+        this.input = input;
+        this.input.classList.add('ts-cal-input');
+        this.input.readOnly = true;
+        this.parent = this.input.parentElement;
+        this.container = document.createElement('div');
+        this.container.className = 'ts-cal-container';
+
+        this.inputWrapper = document.createElement('div');
+        this.inputWrapper.className = 'ts-cal-input-wrapper';
+
+        this.inputBtn = document.createElement('span');
+        this.inputBtn.className = 'ts-cal-input-btn';
+        this.inputBtn.onclick = this.toggleCalendar.bind(this, false);
+
+        this.input.parentElement.removeChild(this.input);
+        this.inputWrapper.appendChild(this.input);
+        this.inputWrapper.appendChild(this.inputBtn);
+
+        this.container.appendChild(this.inputWrapper);
+        this.container.style.width = this.inputWrapper.offsetWidth + 'px';
     }
 
 
     private setFields(attrs: Object) {
         if (isDefined(attrs)) {
-            let key: string;
-
-            key = 'selectedDate';
-            if (isDefined(attrs[key])) {
-                this.setDate(attrs[key]);
-            } else {
-                this.setDate(new Date(2016, 6, 15));
+            for (var attr in attrs) {
+                if (this[attr] !== null) {
+                    this[attr] = attrs[attr];
+                }
             }
-
-            key = 'calendarCssClass';
-            if (isDefined(attrs[key])) {
-                this.calendarCssClass = attrs[key];
-            }
-
-            key = 'calendayDayCssClass';
-            if (isDefined(attrs[key])) {
-                this.calendayDayCssClass = attrs[key];
-            }
-
-            key = 'calendarSelectedDayCssClass';
-            if (isDefined(attrs[key])) {
-                this.calendarDayActiveCssClass = attrs[key];
-            }
-
-            key = 'onSelectedDateChanged';
-            if (isDefined(attrs[key])) {
-                this.onSelectedDateChanged = attrs[key];
-            }
-        } else {
-            this.setDate(new Date());
         }
+
+        this.setDate(this.selectedDate);
+    }
+
+
+    private getSelectedDate() {
+        return this.selectedDate;
     }
 
 
@@ -83,6 +107,7 @@ export class Calendar {
         this.selectedDay = this.selectedDate.getUTCDate();
         this.selectedMonth = this.selectedDate.getUTCMonth();
         this.selectedYear = this.selectedDate.getUTCFullYear();
+        this.input.value = this.selectedDate.toLocaleDateString();
     }
 
 
@@ -114,19 +139,94 @@ export class Calendar {
     }
 
 
+    private dispatchOnSelectedDateChanged(): void {
+        if (this.compareDates(this.oldSelectedDate, this.selectedDate) === 0) {
+            return;
+        }
+
+        if (this.onSelectedDateChanged) {
+            var event = new Event('selectedDateChanged');
+            self.addEventListener('selectedDateChanged',
+                this.onSelectedDateChanged({
+                    oldDate: this.oldSelectedDate, newDate: this.selectedDate
+                }), false
+            );
+            self.dispatchEvent(event);
+        }
+    }
+
+
     private setNewDay(date, ev): void {
         let self = ev.target;
-        this.selectedCell.classList.remove(this.calendarDayActiveCssClass);
+        this.selectedCell.classList.remove(this._activeDayCssClass);
+        if (this.activeDayCssClass.length > 0) {
+            this.selectedCell.classList.remove(this.activeDayCssClass);
+        }
+
+        if (!self.classList.contains(this._dayCssClass) && self.parentElement.classList.contains(this._dayCssClass)) {
+            self = self.parentElement;
+        }
         this.selectedCell = self;
         this.setDate(date);
-        self.classList.add(this.calendarDayActiveCssClass);
+
+        if (this.activeDayCssClass.length > 0) {
+            self.classList.add(this.activeDayCssClass);
+        }
+        self.classList.add(this._activeDayCssClass);
+        this.dispatchOnSelectedDateChanged();
     }
 
 
     private setNewMonth(date, ev): void {
         this.setDate(date);
-        this.container.removeChild(this.calendar);
+        this.container.removeChild(this.calendarWrapper);
         this.render();
+        this.dispatchOnSelectedDateChanged();
+    }
+
+
+    private setHeaderButtonProps(btn: HTMLTableHeaderCellElement, charCode: number, newMonth: Date): void {
+        btn.className = this._headerCssClass + this.headerCssClass;
+
+        let span: HTMLSpanElement = document.createElement('span');
+        span.innerText = String.fromCharCode(charCode);
+        span.style.transform = 'scale(2)';
+        btn.appendChild(span);
+        btn.onclick = this.setNewMonth.bind(this, this.copyDate(newMonth));
+    }
+
+
+    private toggleCalendar(firstShow?: boolean): void {
+        const doFirstShow: boolean = this.animate && isDefined(firstShow) && firstShow;
+        if (doFirstShow) {
+            this.calendarWrapper.style.display = 'none';
+        }
+
+        if (this.isHidden) {
+            if (this.animate) {
+                this.calendarWrapper.className = 'ts-cal-wrapper ts-cal-animate-show';
+            } else {
+                this.calendarWrapper.classList.remove('ts-cal-hide');
+            }
+
+            this.inputBtn.innerText = String.fromCharCode(9650);
+        } else {
+            if (this.animate) {
+                this.calendarWrapper.className = 'ts-cal-wrapper ts-cal-animate-hide';
+            } else {
+                this.calendarWrapper.classList.add('ts-cal-hide');
+            }
+
+            this.inputBtn.innerText = String.fromCharCode(9660);
+        }
+
+        if (doFirstShow) {
+            setTimeout(function () {
+                this.style.display = '';
+            }.bind(this.calendarWrapper), 300);
+        }
+
+        this.isHidden = !this.isHidden;
     }
 
 
@@ -134,18 +234,17 @@ export class Calendar {
         let tr: HTMLTableRowElement = document.createElement('tr');
 
         let btnLeft: HTMLTableHeaderCellElement = document.createElement('th');
-        btnLeft.colSpan = 1;
-        btnLeft.innerText = 'L';
-        btnLeft.onclick = this.setNewMonth.bind(this, this.copyDate(prevMonth));
+        this.setHeaderButtonProps(btnLeft, 8592, prevMonth);
 
         let btnRight: HTMLTableHeaderCellElement = document.createElement('th');
-        btnRight.colSpan = 1;
-        btnRight.innerText = 'R';
-        btnRight.onclick = this.setNewMonth.bind(this, this.copyDate(nextMonth));
+        this.setHeaderButtonProps(btnRight, 8594, nextMonth);
 
         let title: HTMLTableHeaderCellElement = document.createElement('th');
+        let titleText: HTMLSpanElement = document.createElement('span');
+        titleText.innerText = this.months[curMonth.getUTCMonth()] + ' ' + curMonth.getUTCFullYear();
+
+        title.appendChild(titleText);
         title.colSpan = 5;
-        title.innerText = this.months[curMonth.getUTCMonth()] + ' ' + curMonth.getUTCFullYear();
 
         tr.appendChild(btnLeft);
         tr.appendChild(title);
@@ -159,11 +258,15 @@ export class Calendar {
 
         for (let i: number = 0; i < 7; ++i) {
             let td: HTMLTableCellElement = document.createElement('td');
-            td.className = this.calendayDayCssClass;
-            td.innerText = curDate.getUTCDate().toString();
+            let span: HTMLSpanElement = document.createElement('span');
+            td.className = this._dayCssClass + this.dayCssClass;
+            span.innerText = curDate.getUTCDate().toString();
 
             if (this.compareDates(curDate, this.selectedDate) === 0) {
-                td.classList.add(this.calendarDayActiveCssClass);
+                td.classList.add(this._activeDayCssClass);
+                if (this.activeDayCssClass.length > 0) {
+                    td.classList.add(this.activeDayCssClass);
+                }
                 this.selectedCell = td;
             } else if (curDate.getUTCMonth() < this.selectedMonth || curDate.getUTCMonth() > this.selectedMonth) {
                 td.onclick = this.setNewMonth.bind(this, this.copyDate(curDate));
@@ -171,6 +274,7 @@ export class Calendar {
                 td.onclick = this.setNewDay.bind(this, this.copyDate(curDate));
             }
 
+            td.appendChild(span);
             tr.appendChild(td);
             curDate.setUTCDate(curDate.getUTCDate() + 1);
         }
@@ -206,8 +310,11 @@ export class Calendar {
             );
         }
 
+        let wrapper: HTMLDivElement = document.createElement('div');
+        wrapper.className = 'ts-cal-wrapper';
+
         let table: HTMLTableElement = document.createElement('table');
-        table.className = this.calendarCssClass;
+        table.className = this._cssClass + this.cssClass;
 
         let thead: HTMLTableSectionElement = document.createElement('thead');
         thead.appendChild(
@@ -221,7 +328,11 @@ export class Calendar {
 
         table.appendChild(thead);
         table.appendChild(tbody);
+        wrapper.appendChild(table);
         this.calendar = table;
-        this.container.appendChild(table);
+        this.calendarWrapper = wrapper;
+        this.container.appendChild(this.calendarWrapper);
+        this.parent.appendChild(this.container);
+        this.container.style.width = this.input.offsetWidth + 'px';
     }
 }
